@@ -23,6 +23,11 @@
 #define PIN_Echo 11
 
 // #include <cstdint>
+
+// 前向声明
+enum class RobotMotionId : uint8_t;
+enum class RobotMotionState : uint8_t;
+
 //-=================== loader ========================
 IRobot::ServoTrim trimLoader;
 IRobot::ServoReverse reverseLoader;
@@ -39,12 +44,15 @@ void setupUS() {
 int getUSDistance() {
   // 获取超声波传感器的距离
   float distance = usSensor.read(); // 读取距离
+  int distanceInt = static_cast<int>(distance * 100); // 转换为整数厘米
   debugF("US Distance: ");
-  debugln(distance);
-  return static_cast<int>(distance); // 返回整数距离
+  debug(distanceInt);
+  debuglnF(" cm");
+  return static_cast<int>(distanceInt); // 返回整数距离
 }
 
 //-=================== 状态机 ========================
+// 定义完整的枚举类型
 enum class RobotMotionId : uint8_t {
   Idle,
   Walking,
