@@ -1,0 +1,9 @@
+{
+    "C_Cpp.errorSquiggles": "disabled",
+    "C_Cpp.formatting": "default",
+    "C_Cpp.enabled": false,
+    "clangd.arguments": [
+        "--background-index"
+    ],
+    "editor.semanticHighlighting.enabled": true
+}

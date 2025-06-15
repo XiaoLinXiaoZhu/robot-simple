@@ -1,0 +1,31 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/Libraries/**",
+                "C:/Users/29659/AppData/Local/Arduino15/packages/**",
+                "C:/Users/29659/AppData/Local/Arduino15/libraries/**",
+                "C:/Users/29659/Documents/Arduino/libraries/**",
+                "C:/Users/29659/.platformio/packages/framework-arduino-avr/cores/arduino"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE",
+                "ARDUINO=10807",
+                "VSCODE",
+                "ARDUINO_ARCH_AVR",
+                "ARDUINO_AVR_UNO",
+                "HAVE_HWSERIAL0",
+                "UART0_UDRE_vect"
+            ],
+            "windowsSdkVersion": "10.0.22621.0",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-msvc-x64"
+        }
+    ],
+    "version": 4
+}

@@ -1,0 +1,29 @@
+# .clangd
+
+# 设置编译器参数（宏定义、头文件路径）
+CompileFlags:
+  # 添加全局宏定义
+  Add:
+    - -DFORCE_INLINE=inline
+    - -DARDUINO=10807
+    - -DARDUINO_AVR_UNO
+    - -DARDUINO_ARCH_AVR
+    - -DHAVE_HWSERIAL0
+    - -DUART0_UDRE_vect
+    - -DUSB_VID=0x2341
+    - -DUSB_PID=0x0043
+    - -DVSCODE
+    # 指定头文件搜索路径
+    - -I${workspaceFolder}
+    - -IC:/Users/29659/AppData/Local/Arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino
+    - -IC:/Users/29659/AppData/Local/Arduino15/packages/arduino/hardware/avr/1.8.6/variants/standard
+    - -IC:/Users/29659/Documents/Arduino/libraries
+    - -IC:/Users/29659/AppData/Local/Arduino15/libraries
+    - -IC:/Program Files (x86)/Arduino/libraries
+    - -IC:/Users/29659/AppData/Local/Arduino15/libraries/Servo/src
+    - -IC:/Users/29659/AppData/Local/Arduino15/packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7/avr/include
+    - -IC:/Users/29659/AppData/Local/Arduino15/packages/arduino/hardware/avr/1.8.6/libraries/EEPROM/src
+    - -IC:/Users/29659/Documents/Arduino/libraries/U8g2/src/
+    # 添加编译器标准
+    - -std=c17
+    - -std=c++17
