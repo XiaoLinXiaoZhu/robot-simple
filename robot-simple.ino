@@ -189,6 +189,9 @@ void handleCommands() {
       case 'R':
         handleCommand_TR(token);
         break;
+      case 'D':
+        handleCommand_Dancing(token);
+        break;
       case 'S':
         debuglnF("Stop command received.");
         setMovingState(RobotMotionId::Idle);
@@ -344,6 +347,12 @@ void handleCommand_TR(char *token) {
   setMovingState(RobotMotionId::TurningRight); // 设置为右转状态
 }
 
+void handleCommand_Dancing(char *token) {
+  // 开始跳舞
+  debuglnF("Running command D - Dancing.");
+  setMovingState(RobotMotionId::Dancing); // 设置为跳舞状态
+}
+
 //-===================== 执行动作 =====================-
 uint16_t sharedCounter = 0; // 共享的计数器
 
@@ -365,7 +374,7 @@ void UpdateMotion() {
     handleMotionTurnRight();
     break;
   case RobotMotionId::Dancing:
-    debuglnF("Robot is dancing.");
+    handleMotionDancing();
     break;
   case RobotMotionId::Singing:
     debuglnF("Robot is singing.");
@@ -739,6 +748,132 @@ void handleMotionTurnRight() {
 
     // 如果有下一个动作ID设置，将自动切换到该状态
     // 否则默认回到空闲状态
+    if (nextMotionId == currentMotionId) {
+      setMovingState(RobotMotionId::Idle);
+    }
+  }
+}
+
+void handleMotionDancing() {
+  // 定义动作幅度系数
+  const uint8_t hipSwingAmplitude = 30;   // 髋关节摆动幅度
+  const uint8_t legLiftHeight = 20;       // 腿抬起高度
+  const uint8_t centerPos = 90;           // 中心位置
+  
+  if (currentMotionState == RobotMotionState::NotStarted) {
+    debuglnF("Robot starts dancing.");
+    sharedCounter = 0;
+    // 初始化所有舵机位置，准备跳舞
+    for (int i = 0; i < 8; i++) {
+      setServo(i, centerPos); // 所有舵机回到中心位置
+    }
+    currentMotionState = RobotMotionState::InProgress;
+  } else if (currentMotionState == RobotMotionState::InProgress) {
+    // 机器人跳舞循环
+    uint8_t dancePhase = sharedCounter % 12; // 将舞蹈分为12个阶段
+
+    debugF("Dancing phase: ");
+    debugln(dancePhase);
+
+    switch (dancePhase) {
+      case 0: // 准备姿势 - 稍微抬起所有腿
+        setServo(FRONT_RIGHT_LEG, centerPos - legLiftHeight/2);
+        setServo(FRONT_LEFT_LEG, centerPos - legLiftHeight/2);
+        setServo(BACK_RIGHT_LEG, centerPos - legLiftHeight/2);
+        setServo(BACK_LEFT_LEG, centerPos - legLiftHeight/2);
+        break;
+      case 1: // 前腿下压，后腿抬起
+        setServo(FRONT_RIGHT_LEG, centerPos);
+        setServo(FRONT_LEFT_LEG, centerPos);
+        setServo(BACK_RIGHT_LEG, centerPos - legLiftHeight);
+        setServo(BACK_LEFT_LEG, centerPos - legLiftHeight);
+        break;
+      case 2: // 髋关节左右摆动
+        setServo(FRONT_RIGHT_HIP, centerPos + hipSwingAmplitude);
+        setServo(FRONT_LEFT_HIP, centerPos - hipSwingAmplitude);
+        setServo(BACK_RIGHT_HIP, centerPos + hipSwingAmplitude);
+        setServo(BACK_LEFT_HIP, centerPos - hipSwingAmplitude);
+        break;
+      case 3: // 髋关节反向摆动
+        setServo(FRONT_RIGHT_HIP, centerPos - hipSwingAmplitude);
+        setServo(FRONT_LEFT_HIP, centerPos + hipSwingAmplitude);
+        setServo(BACK_RIGHT_HIP, centerPos - hipSwingAmplitude);
+        setServo(BACK_LEFT_HIP, centerPos + hipSwingAmplitude);
+        break;
+      case 4: // 前腿抬起，后腿下压
+        setServo(FRONT_RIGHT_LEG, centerPos - legLiftHeight);
+        setServo(FRONT_LEFT_LEG, centerPos - legLiftHeight);
+        setServo(BACK_RIGHT_LEG, centerPos);
+        setServo(BACK_LEFT_LEG, centerPos);
+        break;
+      case 5: // 对角线动作 - 前右和后左抬高
+        setServo(FRONT_RIGHT_LEG, centerPos - legLiftHeight);
+        setServo(BACK_LEFT_LEG, centerPos - legLiftHeight);
+        setServo(FRONT_LEFT_LEG, centerPos);
+        setServo(BACK_RIGHT_LEG, centerPos);
+        break;
+      case 6: // 对角线动作 - 前左和后右抬高
+        setServo(FRONT_LEFT_LEG, centerPos - legLiftHeight);
+        setServo(BACK_RIGHT_LEG, centerPos - legLiftHeight);
+        setServo(FRONT_RIGHT_LEG, centerPos);
+        setServo(BACK_LEFT_LEG, centerPos);
+        break;
+      case 7: // 全身"抖动" - 所有髋关节左转
+        setServo(FRONT_RIGHT_HIP, centerPos - hipSwingAmplitude/2);
+        setServo(FRONT_LEFT_HIP, centerPos - hipSwingAmplitude/2);
+        setServo(BACK_RIGHT_HIP, centerPos - hipSwingAmplitude/2);
+        setServo(BACK_LEFT_HIP, centerPos - hipSwingAmplitude/2);
+        break;
+      case 8: // 全身"抖动" - 所有髋关节右转
+        setServo(FRONT_RIGHT_HIP, centerPos + hipSwingAmplitude/2);
+        setServo(FRONT_LEFT_HIP, centerPos + hipSwingAmplitude/2);
+        setServo(BACK_RIGHT_HIP, centerPos + hipSwingAmplitude/2);
+        setServo(BACK_LEFT_HIP, centerPos + hipSwingAmplitude/2);
+        break;
+      case 9: // 再次全身"抖动" - 所有髋关节左转
+        setServo(FRONT_RIGHT_HIP, centerPos - hipSwingAmplitude/2);
+        setServo(FRONT_LEFT_HIP, centerPos - hipSwingAmplitude/2);
+        setServo(BACK_RIGHT_HIP, centerPos - hipSwingAmplitude/2);
+        setServo(BACK_LEFT_HIP, centerPos - hipSwingAmplitude/2);
+        break;
+      case 10: // 结束动作 - 髋关节回中
+        setServo(FRONT_RIGHT_HIP, centerPos);
+        setServo(FRONT_LEFT_HIP, centerPos);
+        setServo(BACK_RIGHT_HIP, centerPos);
+        setServo(BACK_LEFT_HIP, centerPos);
+        break;
+      case 11: // 结束动作 - 腿部回中
+        setServo(FRONT_RIGHT_LEG, centerPos);
+        setServo(FRONT_LEFT_LEG, centerPos);
+        setServo(BACK_RIGHT_LEG, centerPos);
+        setServo(BACK_LEFT_LEG, centerPos);
+        
+        // 增加计数器，用于确定是否完成舞蹈
+        sharedCounter += 1;
+        
+        // 如果完成了3个完整的舞蹈循环，则标记为完成
+        if (sharedCounter >= 36) { // 3 * 12 = 36
+          currentMotionState = RobotMotionState::Completed;
+          debuglnF("Dancing completed.");
+        }
+        break;
+    }
+    
+    // 如果不是最后一个阶段，增加计数器
+    if (dancePhase != 11) {
+      sharedCounter += 1;
+    }
+    
+  } else if (currentMotionState == RobotMotionState::Completed) {
+    // 舞蹈完成后回到空闲状态
+    debuglnF("Dance completed, returning to idle.");
+    
+    // 确保所有舵机回到中心位置
+    for (int i = 0; i < 8; i++) {
+      setServo(i, 90);
+    }
+    
+    // 如果没有设置下一个状态，则默认回到空闲状态
     if (nextMotionId == currentMotionId) {
       setMovingState(RobotMotionId::Idle);
     }
