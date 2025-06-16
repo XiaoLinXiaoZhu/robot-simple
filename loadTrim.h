@@ -11,9 +11,9 @@ namespace IRobot {
 
 class ServoTrim {
 private:
-    static constexpr uint16_t EEPROM_MAGIC = 0xabc1;
+    static constexpr uint16_t EEPROM_MAGIC = 0xabcd;
     // 为 ServoTrim 分配独立的 EEPROM 存储区域
-    static constexpr uint8_t EEPROM_MAGIC_ADDR = 18; // 魔数存储位置，与 ServoReverse 不同
+    static constexpr uint8_t EEPROM_MAGIC_ADDR = 2; // 魔数存储位置，与 ServoReverse 不同
     static constexpr uint8_t EEPROM_OFFSET = 20;     // 数据存储位置
     int8_t trim[8] = {-20,10,0,0,0,0,10,0}; // 默认值，8个舵机的trim值
 

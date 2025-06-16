@@ -11,7 +11,7 @@ namespace IRobot {
 
 class ServoReverse {
 private:
-    static constexpr uint16_t EEPROM_MAGIC = 0xabc7; // 魔术数，用于验证数据有效性
+    static constexpr uint16_t EEPROM_MAGIC = 0xabcd; // 魔术数，用于验证数据有效性
     // 为 ServoReverse 分配独立的 EEPROM 存储区域
     static constexpr uint8_t EEPROM_MAGIC_ADDR = 2; // 魔数存储位置
     static constexpr uint8_t EEPROM_OFFSET = 4;     // 数据存储位置
