@@ -34,8 +34,8 @@ struct FakeSerial {
     // 提供和 SERIAL 一样的接口
     #define debug(message)         do { Serial.print(message); OLED_Lite::print(message); } while(0)
     #define debugln(message)       do { Serial.println(message); OLED_Lite::println(message); } while(0)
-    #define debugF(message)        do { Serial.print(F(message)); OLED_Lite::print(message); } while(0)
-    #define debuglnF(message)      do { Serial.println(F(message)); OLED_Lite::println(message); } while(0)
+    #define debugF(message)        do { Serial.print(F(message)); OLED_Lite::print(F(message)); } while(0)
+    #define debuglnF(message)      do { Serial.println(F(message)); OLED_Lite::println(F(message)); } while(0)
 #else
     #define debug(message)         do {} while (0)
     #define debugln(message)       do {} while (0)
