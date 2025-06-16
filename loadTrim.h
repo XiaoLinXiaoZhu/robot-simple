@@ -11,17 +11,17 @@ namespace IRobot {
 
 class ServoTrim {
 private:
-    static constexpr uint16_t EEPROM_MAGIC = 0xabcd;
-    static constexpr uint8_t EEPROM_OFFSET = 2;
-    int8_t trim[8] = {0}; // 每个舵机的修剪值
+    static constexpr uint16_t EEPROM_MAGIC = 0xabc1;
+    // 为 ServoTrim 分配独立的 EEPROM 存储区域
+    static constexpr uint8_t EEPROM_MAGIC_ADDR = 18; // 魔数存储位置，与 ServoReverse 不同
+    static constexpr uint8_t EEPROM_OFFSET = 20;     // 数据存储位置
+    int8_t trim[8] = {-20,10,0,0,0,0,10,0}; // 默认值，8个舵机的trim值
 
 public:
     ServoTrim() {
         load(); // 构造时自动加载
-    }
-
-    void load() {
-        uint16_t magic = (EEPROM.read(0) << 8) | EEPROM.read(1);
+    }    void load() {
+        uint16_t magic = (EEPROM.read(EEPROM_MAGIC_ADDR) << 8) | EEPROM.read(EEPROM_MAGIC_ADDR + 1);
         if (magic == EEPROM_MAGIC) {
             for (int i = 0; i < 8; i++) {
                 int16_t val = (EEPROM.read(i * 2 + EEPROM_OFFSET) << 8) |
@@ -40,11 +40,9 @@ public:
             // 第一次运行，写入魔术数并保存默认值
             store(); // 默认值为0，直接存储
         }
-    }
-
-    void store() const {
-        EEPROM.write(0, EEPROM_MAGIC >> 8);
-        EEPROM.write(1, EEPROM_MAGIC & 0xFF);
+    }    void store() const {
+        EEPROM.write(EEPROM_MAGIC_ADDR, EEPROM_MAGIC >> 8);
+        EEPROM.write(EEPROM_MAGIC_ADDR + 1, EEPROM_MAGIC & 0xFF);
 
         for (int i = 0; i < 8; i++) {
             EEPROM.write(i * 2 + EEPROM_OFFSET, trim[i] >> 8);

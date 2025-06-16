@@ -31,7 +31,7 @@ namespace OLED_Lite {
     void displayText(const char *text, int x, int y);
     void clear();    
     void newLine();
-      void print(const char *text);
+    void print(const char *text);
     void print(const __FlashStringHelper *text);
     void print(char value);
     void print(unsigned char value);

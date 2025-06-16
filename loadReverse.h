@@ -11,29 +11,27 @@ namespace IRobot {
 
 class ServoReverse {
 private:
-    static constexpr uint16_t EEPROM_MAGIC = 0xabcd;
-    static constexpr uint8_t EEPROM_OFFSET = 2;
+    static constexpr uint16_t EEPROM_MAGIC = 0xabc7; // 魔术数，用于验证数据有效性
+    // 为 ServoReverse 分配独立的 EEPROM 存储区域
+    static constexpr uint8_t EEPROM_MAGIC_ADDR = 2; // 魔数存储位置
+    static constexpr uint8_t EEPROM_OFFSET = 4;     // 数据存储位置
     // 用一个字节的每一位表示一个舵机的反转标志
     uint8_t reverse = 0;
 
 public:
     ServoReverse() {
         load(); // 构造时自动加载
-    }
-
-    void load() {
-        uint16_t magic = (EEPROM.read(0) << 8) | EEPROM.read(1);
+    }    void load() {
+        uint16_t magic = (EEPROM.read(EEPROM_MAGIC_ADDR) << 8) | EEPROM.read(EEPROM_MAGIC_ADDR + 1);
         if (magic == EEPROM_MAGIC) {
             uint8_t val = EEPROM.read(EEPROM_OFFSET);
             reverse = val;
         } else {
             store(); // 默认值为0，直接存储
         }
-    }
-
-    void store() const {
-        EEPROM.write(0, EEPROM_MAGIC >> 8);
-        EEPROM.write(1, EEPROM_MAGIC & 0xFF);
+    }    void store() const {
+        EEPROM.write(EEPROM_MAGIC_ADDR, EEPROM_MAGIC >> 8);
+        EEPROM.write(EEPROM_MAGIC_ADDR + 1, EEPROM_MAGIC & 0xFF);
         EEPROM.write(EEPROM_OFFSET, reverse);
     }
 

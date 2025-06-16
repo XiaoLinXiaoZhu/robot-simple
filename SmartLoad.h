@@ -7,7 +7,7 @@
 
 #include <EEPROM.h>
 #define EEPROM_FASTLOAD_MAGIC 0xD2  // EEPROM地址(用于设置是否快速启动)
-#define EEPROM_FASTLOAD_OFFSET 25   // EEPROM偏移量(用于设置是否快速启动)
+#define EEPROM_FASTLOAD_OFFSET 6   // EEPROM偏移量(用于设置是否快速启动)
 
 inline bool getEEPROMFastLoad() {
   // 获取EEPROM快速加载标志

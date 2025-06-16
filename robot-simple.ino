@@ -111,6 +111,8 @@ void SyncMovingState() {
 
 void setup() {
   Serial.begin(9600); // 初始化串口通信
+  delay(100);
+  debugF("Robot Simple Setup Start...");
 
   // 初始化 us传感器
   setupUS();
@@ -756,6 +758,11 @@ uint8_t board_pins[8] = {2, 8, 3, 9, 4, 6, 5, 7}; // 舵机引脚定义
 Servo servo;                                      // 创建Servo对象
 uint8_t currentServoPin = -1; // 当前连接的舵机引脚，-1表示未连接
 
+// 设置舵机角度函数
+// 对于 hip（髋关节）和 leg（腿部），
+// leg + 代表 放下腿， leg - 代表 抬起腿
+// hip + 代表 逆时针旋转，hip - 代表 顺时针旋转
+
 void setServo(int id, int target) {
   if (id < 0 || id > 7)
     return;
@@ -772,6 +779,11 @@ void setServo(int id, int target) {
     target = 180;
   }
 
+  debugF("setServo id: ");
+  debug(id);
+  debugF(", target: ");
+  debug(target);
+
   // 如果需要更改舵机引脚
   if (currentServoPin != board_pins[id]) {
     // 如果之前有舵机连接，先分离
@@ -786,6 +798,7 @@ void setServo(int id, int target) {
   // 计算实际角度，考虑修剪和反转
   int angle;
   if (reverseLoader.get(id)) {
+    debugF(", reverse: true");
     angle = 180 - (target + trimLoader.get(id));
   } else {
     angle = target + trimLoader.get(id);
@@ -797,10 +810,7 @@ void setServo(int id, int target) {
   if (angle > 180)
     angle = 180;
 
-  debugF("setServo id: ");
-  debug(id);
-  debugF(", target: ");
-  debug(target);
+
   debugF(", angle: ");
   debug(angle);
   debuglnF(".");
@@ -808,5 +818,5 @@ void setServo(int id, int target) {
   servo.write(angle);
 
   // 确保舵机有足够时间响应
-  delay(200); // 添加短暂延时以避免同时移动所有舵机
+  delay(20); // 添加短暂延时以避免同时移动所有舵机
 }
