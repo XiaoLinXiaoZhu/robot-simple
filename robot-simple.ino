@@ -4,6 +4,7 @@
 #include "loadReverse.h"
 #include "loadTrim.h"
 #include <Servo.h>
+#include "oledFace.h"
 
 #ifdef VSCODE
 #include <cstdint>
@@ -135,6 +136,8 @@ void setup() {
     delay(4000);
   }
   setEEPROMFastLoad(true); // 设置快速加载标志
+
+  showFace("happy"); // 显示默认表情
 }
 
 void loop() {
@@ -384,17 +387,24 @@ void UpdateMotion() {
 
 void handleMotionIdle() {
   if (currentMotionState == RobotMotionState::NotStarted) {
+    showFace("happy"); // 显示默认表情
     debuglnF("Robot is idle.");
     // 所有的脚都设置为90度
     for (int i = 0; i < 8; i++) {
       setServo(i, 90);
     }
+    sharedCounter = 0; // 重置共享计数器
     currentMotionState = RobotMotionState::InProgress; // 设置为进行中状态
   } else if (currentMotionState == RobotMotionState::InProgress) {
     // 如果已经处于进行中状态，可以添加其他逻辑
     debuglnF("Robot is still idle.");
     currentMotionState = RobotMotionState::Completed; // 设置为完成状态
   } else if (currentMotionState == RobotMotionState::Completed) {
+    sharedCounter ++; // 增加计数器
+    if (sharedCounter >= 30){
+      showFace("sleepy"); // 显示困倦表情
+      debuglnF("Robot is now sleepy.");
+    }
   }
 }
 
@@ -426,6 +436,7 @@ void handleMotionWalk() {
 
     switch (walkPhase) {
     case 0: // 准备抬起前右腿和后左腿
+      showFace("thinking"); // 显示思考表情
       setServo(FRONT_RIGHT_LEG, centerPos - legLiftHeight); // 抬起前右腿
       setServo(BACK_LEFT_LEG, centerPos - legLiftHeight);   // 抬起后左腿
       break;
@@ -438,6 +449,7 @@ void handleMotionWalk() {
       setServo(BACK_LEFT_LEG, centerPos);   // 放下后左腿
       break;
     case 3: // 准备移动身体
+      showFace("surprised"); // 显示惊讶表情
       // 稍作停顿，为下一步准备
       break;
     case 4: // 准备抬起前左腿和后右腿
@@ -491,6 +503,9 @@ void handleMotionAutoWalk() {
     debug(amplitude);
     debuglnF(" degrees");
 
+    // 显示表情
+    showFace("happy"); // 显示高兴表情
+
     sharedCounter = 0;
     // 初始化所有舵机位置，准备行走
     for (int i = 0; i < 8; i++) {
@@ -507,6 +522,7 @@ void handleMotionAutoWalk() {
     if (distance < 20) { // 如果距离小于20cm，转向或停止
       // 根据 sharedCounter 来决定转向的具体动作
       if (sharedCounter % 2 == 0) {
+        showFace("confused"); // 显示困惑表情
         debuglnF("Obstacle detected, turning left.");
         currentMotionState = RobotMotionState::NotStarted; // 重置状态，准备转向
         currentMotionId = RobotMotionId::TurningLeft;      // 设置为左转状态
@@ -514,6 +530,7 @@ void handleMotionAutoWalk() {
         // 设置下一个状态为回归 autoWalking
         nextMotionId = RobotMotionId::AutoWalking; // 转向后继续自动行走
       } else {
+        showFace("angry"); // 显示生气表情
         debuglnF("Obstacle detected, turning right.");
         setMovingState(RobotMotionId::TurningRight);
         currentMotionState = RobotMotionState::NotStarted; // 重置状态，准备转向
@@ -531,6 +548,7 @@ void handleMotionAutoWalk() {
 
     switch (walkPhase) {
     case 0: // 准备抬起前右腿和后左腿
+      showFace("thinking"); // 显示思考表情
       setServo(FRONT_RIGHT_LEG, centerPos - legLiftHeight); // 抬起前右腿
       setServo(BACK_LEFT_LEG, centerPos - legLiftHeight);   // 抬起后左腿
       break;
@@ -543,6 +561,7 @@ void handleMotionAutoWalk() {
       setServo(BACK_LEFT_LEG, centerPos);   // 放下后左腿
       break;
     case 3: // 准备移动身体
+      showFace("surprised"); // 显示惊讶表情
       // 稍作停顿，为下一步准备
       break;
     case 4: // 准备抬起前左腿和后右腿
@@ -777,6 +796,7 @@ void handleMotionDancing() {
 
     switch (dancePhase) {
       case 0: // 准备姿势 - 稍微抬起所有腿
+        showFace("excited"); // 显示兴奋表情
         setServo(FRONT_RIGHT_LEG, centerPos - legLiftHeight/2);
         setServo(FRONT_LEFT_LEG, centerPos - legLiftHeight/2);
         setServo(BACK_RIGHT_LEG, centerPos - legLiftHeight/2);
@@ -813,6 +833,7 @@ void handleMotionDancing() {
         setServo(BACK_RIGHT_LEG, centerPos);
         break;
       case 6: // 对角线动作 - 前左和后右抬高
+        showFace("love"); // 显示爱心表情
         setServo(FRONT_LEFT_LEG, centerPos - legLiftHeight);
         setServo(BACK_RIGHT_LEG, centerPos - legLiftHeight);
         setServo(FRONT_RIGHT_LEG, centerPos);

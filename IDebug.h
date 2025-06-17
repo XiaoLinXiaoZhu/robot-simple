@@ -19,8 +19,8 @@ struct FakeSerial {
 
 // 调试输出方式选择：
 //   启用其中一个，或者都不启用以关闭调试输出
-// #define DEBUGOUTPUT_SERIAL
-#define DEBUGOUTPUT_OLED
+#define DEBUGOUTPUT_SERIAL
+// #define DEBUGOUTPUT_OLED
 
 #ifdef DEBUGOUTPUT_SERIAL
     // 分成两个宏，一个用于字面量字符串，一个用于变量
