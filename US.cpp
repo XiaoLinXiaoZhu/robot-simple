@@ -4,11 +4,11 @@
 US::US(){
 }
 
-US::US(uint8_t pinTrigger, uint8_t pinEcho){
+US::US(int pinTrigger, int pinEcho){
   US::init(pinTrigger,pinEcho);
 }
 
-void US::init(uint8_t pinTrigger, uint8_t pinEcho)
+void US::init(int pinTrigger, int pinEcho)
 {
   _pinTrigger = pinTrigger;
   _pinEcho = pinEcho;

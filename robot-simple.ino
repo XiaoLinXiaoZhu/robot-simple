@@ -36,25 +36,28 @@ IRobot::ServoReverse reverseLoader;
 //-=================== 超声波传感器 ========================
 US usSensor; // 创建超声波传感器对象
 
-void setupUS() {
+void setupUS()
+{
   // 初始化超声波传感器
   usSensor.init(PIN_Trigger, PIN_Echo);
   debuglnF("US Sensor initialized.");
 }
 
-int getUSDistance() {
+int getUSDistance()
+{
   // 获取超声波传感器的距离
-  float distance = usSensor.read();                   // 读取距离
-  int distanceInt = static_cast<int>(distance * 100); // 转换为整数厘米
+  float distance = usSensor.read();                   // 读取距离，单位为毫米
+  int distanceInt = static_cast<int>(distance); // 转换为整数毫米
   debugF("US Distance: ");
-  debug(distanceInt);
-  debuglnF(" cm");
+  debug(distance);
+  debuglnF(" mm");
   return static_cast<int>(distanceInt); // 返回整数距离
 }
 
 //-=================== 状态机 ========================
 // 定义完整的枚举类型
-enum class RobotMotionId : uint8_t {
+enum class RobotMotionId : uint8_t
+{
   Idle,
   Walking,
   AutoWalking, // 自动行走
@@ -64,28 +67,37 @@ enum class RobotMotionId : uint8_t {
   Singing,
   DebugUS
 };
-enum class RobotMotionState : uint8_t { NotStarted, InProgress, Completed };
+enum class RobotMotionState : uint8_t
+{
+  NotStarted,
+  InProgress,
+  Completed
+};
 
 RobotMotionId currentMotionId = RobotMotionId::Idle; // 当前动作ID
 RobotMotionId nextMotionId = RobotMotionId::Idle;    // 下一个动作ID
 RobotMotionState currentMotionState =
     RobotMotionState::NotStarted; // 当前动作状态
 
-void setMovingState(RobotMotionId motionId) {
+void setMovingState(RobotMotionId motionId)
+{
   // 设置下一个动作ID
   nextMotionId = motionId;
   debugF("Setting motion to: ");
   debugln(static_cast<uint8_t>(motionId));
 }
 
-bool haveNextMotion() {
+bool haveNextMotion()
+{
   // 检查是否有下一个动作
   return !(nextMotionId == currentMotionId);
 }
 
-void SyncMovingState() {
+void SyncMovingState()
+{
   // 如果下一个动作ID与当前动作ID不同，则更新当前动作ID
-  if (nextMotionId != currentMotionId) {
+  if (nextMotionId != currentMotionId)
+  {
     debugF("Scheduling next motion from ");
     debug(static_cast<uint8_t>(currentMotionId));
     debugF(" to ");
@@ -100,7 +112,8 @@ void SyncMovingState() {
     // }
 
     // 如果上一个动作已完成，则更新当前动作ID
-    if (currentMotionState == RobotMotionState::Completed) {
+    if (currentMotionState == RobotMotionState::Completed)
+    {
       debuglnF("Current motion is completed, updating to next motion.");
       currentMotionId = nextMotionId;                    // 更新当前动作ID
       currentMotionState = RobotMotionState::NotStarted; // 重置状态
@@ -111,7 +124,8 @@ void SyncMovingState() {
 
 //-=================== 主程序 ========================
 
-void setup() {
+void setup()
+{
   Serial.begin(9600); // 初始化串口通信
   delay(100);
   debugF("Robot Simple Setup Start...");
@@ -130,9 +144,12 @@ void setup() {
   reverseLoader.print(); // 打印当前反向值
   reverseLoader.store(); // 保存反向值到EEPROM
 
-  if (getEEPROMFastLoad()) {
+  if (getEEPROMFastLoad())
+  {
     Serial.println(F("Fast Reload"));
-  } else {
+  }
+  else
+  {
     Serial.println(F("Slow Load"));
     delay(4000);
   }
@@ -141,7 +158,8 @@ void setup() {
   showFace("happy"); // 显示默认表情
 }
 
-void loop() {
+void loop()
+{
   setEEPROMFastLoad(false); // 禁用快速加载，确保重启时可以覆盖程序
   handleCommands();         // 处理串口命令
 
@@ -151,15 +169,18 @@ void loop() {
 
 //-=================== 处理串口命令 ========================
 const char endChar = '\r'; // 定义命令结束符
-void handleCommands() {
+void handleCommands()
+{
   static char buffer[32]; // 命令缓冲区
   static uint8_t bufIndex = 0;
 
-  while (Serial.available() > 0) {
+  while (Serial.available() > 0)
+  {
     char inChar = Serial.read();
 
     // 如果接收到了结束符或缓冲区即将溢出，则处理命令
-    if (inChar == endChar || bufIndex >= sizeof(buffer) - 1) {
+    if (inChar == endChar || bufIndex >= sizeof(buffer) - 1)
+    {
       buffer[bufIndex] = '\0'; // 字符串结束符
 
       const char cmd = buffer[0]; // 获取命令字符
@@ -170,7 +191,8 @@ void handleCommands() {
       while (*token == ' ')
         token++; // 跳过可能的多余空格
 
-      switch (cmd) {
+      switch (cmd)
+      {
       case 'C':
         handleCommand_C(token);
         break;
@@ -212,14 +234,17 @@ void handleCommands() {
       // 重置缓冲区索引
       bufIndex = 0;
       return;
-    } else if (inChar != '\r') { // 忽略回车符
+    }
+    else if (inChar != '\r')
+    { // 忽略回车符
       // 将字符添加到缓冲区
       buffer[bufIndex++] = inChar;
     }
   }
 }
 
-void handleCommand_C(char *token) {
+void handleCommand_C(char *token)
+{
   int index = -1, value = 0;
 
   // 解析舵机索引
@@ -230,7 +255,8 @@ void handleCommand_C(char *token) {
     token++;
 
   // 如果找到空格，表示后面有值
-  if (*token == ' ') {
+  if (*token == ' ')
+  {
     // 跳过空格
     while (*token == ' ')
       token++;
@@ -250,12 +276,15 @@ void handleCommand_C(char *token) {
 
     // 重新执行当前动作
     currentMotionState = RobotMotionState::NotStarted; // 重置状态
-  } else {
+  }
+  else
+  {
     debuglnF("Invalid command format.");
   }
 }
 
-void handleCommand_RV(char *token) {
+void handleCommand_RV(char *token)
+{
   int index = -1, value = 0;
 
   // 解析舵机索引
@@ -266,7 +295,8 @@ void handleCommand_RV(char *token) {
     token++;
 
   // 如果找到空格，表示后面有值
-  if (*token == ' ') {
+  if (*token == ' ')
+  {
     // 跳过空格
     while (*token == ' ')
       token++;
@@ -289,19 +319,23 @@ void handleCommand_RV(char *token) {
 
     // 重新执行当前动作
     currentMotionState = RobotMotionState::NotStarted; // 重置状态
-  } else {
+  }
+  else
+  {
     debuglnF("Invalid command format.");
   }
 }
 
-void handleCommand_T(char *token) {
+void handleCommand_T(char *token)
+{
   // 测试命令，直接将所有舵机设置为测试位置
   debuglnF("Running command T - Test Servo Positions.");
 
   // 解析舵机索引
   int index = atoi(token);
 
-  if (index < 0 || index >= 8) {
+  if (index < 0 || index >= 8)
+  {
     debuglnF("Invalid servo index.");
     return;
   }
@@ -312,14 +346,17 @@ void handleCommand_T(char *token) {
   while (*token && *token != ' ')
     token++;
 
-  if (*token == ' ') {
+  if (*token == ' ')
+  {
     // 跳过空格
     while (*token == ' ')
       token++;
 
     // 解析值
     testAngle = atoi(token);
-  } else {
+  }
+  else
+  {
     debugF("No angle specified, using default: ");
     debugln(testAngle);
   }
@@ -329,32 +366,37 @@ void handleCommand_T(char *token) {
   currentMotionState = RobotMotionState::Completed; // 结束状态
 }
 
-void handleCommand_M(char *token) {
+void handleCommand_M(char *token)
+{
   // 开始运行
   debuglnF("Running command M.Moving forward.");
   setMovingState(RobotMotionId::Walking); // 设置为行走状态
   // 这里可以添加具体的运行逻辑
 }
 
-void handleCommand_A(char *token) {
+void handleCommand_A(char *token)
+{
   debuglnF("Get Command Auto Mode.");
   // 自动模式命令，设置下一个动作为自动行走
   setMovingState(RobotMotionId::AutoWalking);
 }
 
-void handleCommand_TL(char *token) {
+void handleCommand_TL(char *token)
+{
   // 开始左转
   debuglnF("Running command L - Turn Left.");
   setMovingState(RobotMotionId::TurningLeft); // 设置为左转状态
 }
 
-void handleCommand_TR(char *token) {
+void handleCommand_TR(char *token)
+{
   // 开始右转
   debuglnF("Running command R - Turn Right.");
   setMovingState(RobotMotionId::TurningRight); // 设置为右转状态
 }
 
-void handleCommand_Dancing(char *token) {
+void handleCommand_Dancing(char *token)
+{
   // 开始跳舞
   debuglnF("Running command D - Dancing.");
   setMovingState(RobotMotionId::Dancing); // 设置为跳舞状态
@@ -363,8 +405,10 @@ void handleCommand_Dancing(char *token) {
 //-===================== 执行动作 =====================-
 uint16_t sharedCounter = 0; // 共享的计数器
 
-void UpdateMotion() {
-  switch (currentMotionId) {
+void UpdateMotion()
+{
+  switch (currentMotionId)
+  {
   case RobotMotionId::Idle:
     handleMotionIdle();
     break;
@@ -392,36 +436,47 @@ void UpdateMotion() {
   }
 }
 
-void handleMotionIdle() {
-  if (currentMotionState == RobotMotionState::NotStarted) {
+void handleMotionIdle()
+{
+  if (currentMotionState == RobotMotionState::NotStarted)
+  {
     showFace("happy"); // 显示默认表情
     debuglnF("Robot is idle.");
     // 所有的脚都设置为90度
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 8; i++)
+    {
       setServo(i, 90);
     }
-    sharedCounter = 0; // 重置共享计数器
+    sharedCounter = 0;                                 // 重置共享计数器
     currentMotionState = RobotMotionState::InProgress; // 设置为进行中状态
-  } else if (currentMotionState == RobotMotionState::InProgress) {
+  }
+  else if (currentMotionState == RobotMotionState::InProgress)
+  {
     // 如果已经处于进行中状态，可以添加其他逻辑
     debuglnF("Robot is still idle.");
+
     currentMotionState = RobotMotionState::Completed; // 设置为完成状态
-  } else if (currentMotionState == RobotMotionState::Completed) {
-    sharedCounter ++; // 增加计数器
-    if (sharedCounter >= 30){
+  }
+  else if (currentMotionState == RobotMotionState::Completed)
+  {
+    sharedCounter++; // 增加计数器
+    if (sharedCounter == 30)
+    {
       showFace("sleepy"); // 显示困倦表情
       debuglnF("Robot is now sleepy.");
     }
   }
 }
 
-void handleMotionWalk() {
+void handleMotionWalk()
+{
   // 定义动作幅度系数
   const uint8_t amplitude = 20;     // 髋关节运动幅度
   const uint8_t legLiftHeight = 10; // 腿抬起高度
   const uint8_t centerPos = 90;     // 中心位置
 
-  if (currentMotionState == RobotMotionState::NotStarted) {
+  if (currentMotionState == RobotMotionState::NotStarted)
+  {
     debuglnF("Robot starts walking.");
     debugF("Walking with amplitude: ");
     debug(amplitude);
@@ -429,11 +484,14 @@ void handleMotionWalk() {
 
     sharedCounter = 0;
     // 初始化所有舵机位置，准备行走
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 8; i++)
+    {
       setServo(i, centerPos); // 所有舵机回到中心位置
     }
     currentMotionState = RobotMotionState::InProgress;
-  } else if (currentMotionState == RobotMotionState::InProgress) {
+  }
+  else if (currentMotionState == RobotMotionState::InProgress)
+  {
     // 机器人行走循环
     // 使用sharedCounter来决定当前的行走阶段
     uint8_t walkPhase = sharedCounter % 8; // 将行走分为8个阶段
@@ -441,13 +499,14 @@ void handleMotionWalk() {
     debugF("Walking phase: ");
     debugln(walkPhase);
 
-    switch (walkPhase) {
-    case 0: // 准备抬起前右腿和后左腿
-      showFace("thinking"); // 显示思考表情
+    switch (walkPhase)
+    {
+    case 0:                                                 // 准备抬起前右腿和后左腿
+      showFace("thinking");                                 // 显示思考表情
       setServo(FRONT_RIGHT_LEG, centerPos - legLiftHeight); // 抬起前右腿
       setServo(BACK_LEFT_LEG, centerPos - legLiftHeight);   // 抬起后左腿
       break;
-    case 1: // 前右腿和后左腿向前迈步
+    case 1:                                             // 前右腿和后左腿向前迈步
       setServo(FRONT_RIGHT_HIP, centerPos + amplitude); // 前右髋关节向前
       setServo(BACK_LEFT_HIP, centerPos - amplitude);   // 后左髋关节向前
       break;
@@ -455,11 +514,11 @@ void handleMotionWalk() {
       setServo(FRONT_RIGHT_LEG, centerPos); // 放下前右腿
       setServo(BACK_LEFT_LEG, centerPos);   // 放下后左腿
       break;
-    case 3: // 准备移动身体
+    case 3:                  // 准备移动身体
       showFace("surprised"); // 显示惊讶表情
       // 稍作停顿，为下一步准备
       break;
-    case 4: // 准备抬起前左腿和后右腿
+    case 4:                                                // 准备抬起前左腿和后右腿
       setServo(FRONT_LEFT_LEG, centerPos - legLiftHeight); // 抬起前左腿
       setServo(BACK_RIGHT_LEG, centerPos - legLiftHeight); // 抬起后右腿
       break;
@@ -471,7 +530,7 @@ void handleMotionWalk() {
       setServo(FRONT_LEFT_LEG, centerPos); // 放下前左腿
       setServo(BACK_RIGHT_LEG, centerPos); // 放下后右腿
       break;
-    case 7: // 恢复所有髋关节到中心位置，准备下一个循环
+    case 7:                                 // 恢复所有髋关节到中心位置，准备下一个循环
       setServo(FRONT_RIGHT_HIP, centerPos); // 前右髋关节回中
       setServo(FRONT_LEFT_HIP, centerPos);  // 前左髋关节回中
       setServo(BACK_RIGHT_HIP, centerPos);  // 后右髋关节回中
@@ -483,20 +542,25 @@ void handleMotionWalk() {
     sharedCounter += 1;
 
     // 如果需要停止行走，可以在这里检查某个条件，然后设置状态为Completed
-    if (sharedCounter >= 64) { // 假设走64个阶段后停止
+    if (sharedCounter >= 64)
+    { // 假设走64个阶段后停止
       debuglnF("Robot completed walking.");
-      for (int i = 0; i < 8; i++) {
+      for (int i = 0; i < 8; i++)
+      {
         setServo(i, 90);
       }
       currentMotionState = RobotMotionState::Completed; // 设置为完成状态
-      nextMotionId = RobotMotionId::Idle; // 完成后设置下一个动作为Idle
+      nextMotionId = RobotMotionId::Idle;               // 完成后设置下一个动作为Idle
     }
     // 这里我们让机器人一直走下去，不主动停止
-  } else if (currentMotionState == RobotMotionState::Completed) {
+  }
+  else if (currentMotionState == RobotMotionState::Completed)
+  {
   }
 }
 
-void handleMotionAutoWalk() {
+void handleMotionAutoWalk()
+{
   // 定义动作幅度系数
   const uint8_t amplitude = 20;     // 髋关节运动幅度
   const uint8_t legLiftHeight = 10; // 腿抬起高度
@@ -504,7 +568,8 @@ void handleMotionAutoWalk() {
 
   // 自动行走和 走路类似，不过会在循环的时候获取 us（超声波传感器）数据，
   // 并根据数据判断是否需要转向或停止。
-  if (currentMotionState == RobotMotionState::NotStarted) {
+  if (currentMotionState == RobotMotionState::NotStarted)
+  {
     debuglnF("Robot starts auto walking.");
     debugF("Auto walking with amplitude: ");
     debug(amplitude);
@@ -515,20 +580,25 @@ void handleMotionAutoWalk() {
 
     sharedCounter = 0;
     // 初始化所有舵机位置，准备行走
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 8; i++)
+    {
       setServo(i, centerPos); // 所有舵机回到中心位置
     }
     currentMotionState = RobotMotionState::InProgress;
-  } else if (currentMotionState == RobotMotionState::InProgress) {
+  }
+  else if (currentMotionState == RobotMotionState::InProgress)
+  {
     // 获取超声波传感器数据
     int distance = getUSDistance(); // 假设有一个函数获取距离
 
     debugF("US Distance: ");
     debugln(distance);
 
-    if (distance < 20) { // 如果距离小于20cm，转向或停止
+    if (distance < 400)
+    { // 如果距离小于400mm，转向或停止
       // 根据 sharedCounter 来决定转向的具体动作
-      if (sharedCounter % 2 == 0) {
+      if (sharedCounter % 2 == 0)
+      {
         showFace("confused"); // 显示困惑表情
         debuglnF("Obstacle detected, turning left.");
         currentMotionState = RobotMotionState::NotStarted; // 重置状态，准备转向
@@ -536,7 +606,9 @@ void handleMotionAutoWalk() {
         // 直接跳转到对应的状态
         // 设置下一个状态为回归 autoWalking
         nextMotionId = RobotMotionId::AutoWalking; // 转向后继续自动行走
-      } else {
+      }
+      else
+      {
         showFace("angry"); // 显示生气表情
         debuglnF("Obstacle detected, turning right.");
         setMovingState(RobotMotionId::TurningRight);
@@ -553,13 +625,14 @@ void handleMotionAutoWalk() {
     debugF("Walking phase: ");
     debugln(walkPhase);
 
-    switch (walkPhase) {
-    case 0: // 准备抬起前右腿和后左腿
-      showFace("thinking"); // 显示思考表情
+    switch (walkPhase)
+    {
+    case 0:                                                 // 准备抬起前右腿和后左腿
+      showFace("thinking");                                 // 显示思考表情
       setServo(FRONT_RIGHT_LEG, centerPos - legLiftHeight); // 抬起前右腿
       setServo(BACK_LEFT_LEG, centerPos - legLiftHeight);   // 抬起后左腿
       break;
-    case 1: // 前右腿和后左腿向前迈步
+    case 1:                                             // 前右腿和后左腿向前迈步
       setServo(FRONT_RIGHT_HIP, centerPos + amplitude); // 前右髋关节向前
       setServo(BACK_LEFT_HIP, centerPos - amplitude);   // 后左髋关节向前
       break;
@@ -567,11 +640,11 @@ void handleMotionAutoWalk() {
       setServo(FRONT_RIGHT_LEG, centerPos); // 放下前右腿
       setServo(BACK_LEFT_LEG, centerPos);   // 放下后左腿
       break;
-    case 3: // 准备移动身体
+    case 3:                  // 准备移动身体
       showFace("surprised"); // 显示惊讶表情
       // 稍作停顿，为下一步准备
       break;
-    case 4: // 准备抬起前左腿和后右腿
+    case 4:                                                // 准备抬起前左腿和后右腿
       setServo(FRONT_LEFT_LEG, centerPos - legLiftHeight); // 抬起前左腿
       setServo(BACK_RIGHT_LEG, centerPos - legLiftHeight); // 抬起后右腿
       break;
@@ -583,30 +656,35 @@ void handleMotionAutoWalk() {
       setServo(FRONT_LEFT_LEG, centerPos); // 放下前左腿
       setServo(BACK_RIGHT_LEG, centerPos); // 放下后右腿
       break;
-    case 7: // 恢复所有髋关节到中心位置，准备下一个循环
+    case 7:                                 // 恢复所有髋关节到中心位置，准备下一个循环
       setServo(FRONT_RIGHT_HIP, centerPos); // 前右髋关节回中
       setServo(FRONT_LEFT_HIP, centerPos);  // 前左髋关节回中
       setServo(BACK_RIGHT_HIP, centerPos);  // 后右髋关节回中
       setServo(BACK_LEFT_HIP, centerPos);   // 后左髋关节回中
       break;
     }
-  } else if (currentMotionState == RobotMotionState::Completed) {
+  }
+  else if (currentMotionState == RobotMotionState::Completed)
+  {
     // 如果当前状态已完成，可能需要重置或进入下一个动作
     debuglnF("Robot completed auto walking.");
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 8; i++)
+    {
       setServo(i, 90); // 所有舵机回到中心位置
     }
     setMovingState(RobotMotionId::Idle); // 设置下一个动作为Idle
   }
 }
 
-void handleMotionTurnLeft() {
+void handleMotionTurnLeft()
+{
   // 定义动作幅度系数
   const uint8_t turnAmplitude = 20; // 转向幅度
   const uint8_t legLiftHeight = 10; // 腿抬起高度
   const uint8_t centerPos = 90;     // 中心位置
 
-  if (currentMotionState == RobotMotionState::NotStarted) {
+  if (currentMotionState == RobotMotionState::NotStarted)
+  {
     debuglnF("Robot starts turning left.");
     debugF("Turning left with amplitude: ");
     debug(turnAmplitude);
@@ -614,18 +692,22 @@ void handleMotionTurnLeft() {
 
     sharedCounter = 0;
     // 初始化所有舵机位置，准备转弯
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 8; i++)
+    {
       setServo(i, centerPos); // 所有舵机回到中心位置
     }
     currentMotionState = RobotMotionState::InProgress;
-  } else if (currentMotionState == RobotMotionState::InProgress) {
+  }
+  else if (currentMotionState == RobotMotionState::InProgress)
+  {
     // 机器人左转循环
     uint8_t turnPhase = sharedCounter % 6; // 将左转分为6个阶段
 
     debugF("Left turning phase: ");
     debugln(turnPhase);
 
-    switch (turnPhase) {
+    switch (turnPhase)
+    {
     case 0:                                                 // 准备抬起所有腿
       setServo(FRONT_RIGHT_LEG, centerPos - legLiftHeight); // 抬起前右腿
       setServo(FRONT_LEFT_LEG, centerPos - legLiftHeight);  // 抬起前左腿
@@ -666,7 +748,8 @@ void handleMotionTurnLeft() {
       sharedCounter += 1;
 
       // 如果已经完成了足够的转向周期，则标记为完成
-      if (sharedCounter >= 12) { // 完成2个完整转向周期
+      if (sharedCounter >= 12)
+      { // 完成2个完整转向周期
         currentMotionState = RobotMotionState::Completed;
         debuglnF("Left turn completed.");
       }
@@ -674,29 +757,34 @@ void handleMotionTurnLeft() {
     }
 
     // 如果没有到case 5，也增加计数器进入下一阶段
-    if (turnPhase != 5) {
+    if (turnPhase != 5)
+    {
       sharedCounter += 1;
     }
-
-  } else if (currentMotionState == RobotMotionState::Completed) {
+  }
+  else if (currentMotionState == RobotMotionState::Completed)
+  {
     // 转弯完成后的处理
     debuglnF("Left turn state completed.");
 
     // 如果有下一个动作ID设置，将自动切换到该状态
     // 否则默认回到空闲状态
-    if (nextMotionId == currentMotionId) {
+    if (nextMotionId == currentMotionId)
+    {
       setMovingState(RobotMotionId::Idle);
     }
   }
 }
 
-void handleMotionTurnRight() {
+void handleMotionTurnRight()
+{
   // 定义动作幅度系数
   const uint8_t turnAmplitude = 20; // 转向幅度
   const uint8_t legLiftHeight = 10; // 腿抬起高度
   const uint8_t centerPos = 90;     // 中心位置
 
-  if (currentMotionState == RobotMotionState::NotStarted) {
+  if (currentMotionState == RobotMotionState::NotStarted)
+  {
     debuglnF("Robot starts turning right.");
     debugF("Turning right with amplitude: ");
     debug(turnAmplitude);
@@ -704,18 +792,22 @@ void handleMotionTurnRight() {
 
     sharedCounter = 0;
     // 初始化所有舵机位置，准备转弯
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 8; i++)
+    {
       setServo(i, centerPos); // 所有舵机回到中心位置
     }
     currentMotionState = RobotMotionState::InProgress;
-  } else if (currentMotionState == RobotMotionState::InProgress) {
+  }
+  else if (currentMotionState == RobotMotionState::InProgress)
+  {
     // 机器人右转循环
     uint8_t turnPhase = sharedCounter % 6; // 将右转分为6个阶段
 
     debugF("Right turning phase: ");
     debugln(turnPhase);
 
-    switch (turnPhase) {
+    switch (turnPhase)
+    {
     case 0:                                                 // 准备抬起所有腿
       setServo(FRONT_RIGHT_LEG, centerPos - legLiftHeight); // 抬起前右腿
       setServo(FRONT_LEFT_LEG, centerPos - legLiftHeight);  // 抬起前左腿
@@ -756,7 +848,8 @@ void handleMotionTurnRight() {
       sharedCounter += 1;
 
       // 如果已经完成了足够的转向周期，则标记为完成
-      if (sharedCounter >= 12) { // 完成2个完整转向周期
+      if (sharedCounter >= 12)
+      { // 完成2个完整转向周期
         currentMotionState = RobotMotionState::Completed;
         debuglnF("Right turn completed.");
       }
@@ -764,165 +857,186 @@ void handleMotionTurnRight() {
     }
 
     // 如果没有到case 5，也增加计数器进入下一阶段
-    if (turnPhase != 5) {
+    if (turnPhase != 5)
+    {
       sharedCounter += 1;
     }
-
-  } else if (currentMotionState == RobotMotionState::Completed) {
+  }
+  else if (currentMotionState == RobotMotionState::Completed)
+  {
     // 转弯完成后的处理
     debuglnF("Right turn state completed.");
 
     // 如果有下一个动作ID设置，将自动切换到该状态
     // 否则默认回到空闲状态
-    if (nextMotionId == currentMotionId) {
+    if (nextMotionId == currentMotionId)
+    {
       setMovingState(RobotMotionId::Idle);
     }
   }
 }
 
-void handleMotionDancing() {
+void handleMotionDancing()
+{
   // 定义动作幅度系数
-  const uint8_t hipSwingAmplitude = 30;   // 髋关节摆动幅度
-  const uint8_t legLiftHeight = 20;       // 腿抬起高度
-  const uint8_t centerPos = 90;           // 中心位置
-  
-  if (currentMotionState == RobotMotionState::NotStarted) {
+  const uint8_t hipSwingAmplitude = 30; // 髋关节摆动幅度
+  const uint8_t legLiftHeight = 20;     // 腿抬起高度
+  const uint8_t centerPos = 90;         // 中心位置
+
+  if (currentMotionState == RobotMotionState::NotStarted)
+  {
     debuglnF("Robot starts dancing.");
     sharedCounter = 0;
     // 初始化所有舵机位置，准备跳舞
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 8; i++)
+    {
       setServo(i, centerPos); // 所有舵机回到中心位置
     }
     currentMotionState = RobotMotionState::InProgress;
-  } else if (currentMotionState == RobotMotionState::InProgress) {
+  }
+  else if (currentMotionState == RobotMotionState::InProgress)
+  {
     // 机器人跳舞循环
     uint8_t dancePhase = sharedCounter % 12; // 将舞蹈分为12个阶段
 
     debugF("Dancing phase: ");
     debugln(dancePhase);
 
-    switch (dancePhase) {
-      case 0: // 准备姿势 - 稍微抬起所有腿
-        showFace("excited"); // 显示兴奋表情
-        setServo(FRONT_RIGHT_LEG, centerPos - legLiftHeight/2);
-        setServo(FRONT_LEFT_LEG, centerPos - legLiftHeight/2);
-        setServo(BACK_RIGHT_LEG, centerPos - legLiftHeight/2);
-        setServo(BACK_LEFT_LEG, centerPos - legLiftHeight/2);
-        break;
-      case 1: // 前腿下压，后腿抬起
-        setServo(FRONT_RIGHT_LEG, centerPos);
-        setServo(FRONT_LEFT_LEG, centerPos);
-        setServo(BACK_RIGHT_LEG, centerPos - legLiftHeight);
-        setServo(BACK_LEFT_LEG, centerPos - legLiftHeight);
-        break;
-      case 2: // 髋关节左右摆动
-        setServo(FRONT_RIGHT_HIP, centerPos + hipSwingAmplitude);
-        setServo(FRONT_LEFT_HIP, centerPos - hipSwingAmplitude);
-        setServo(BACK_RIGHT_HIP, centerPos + hipSwingAmplitude);
-        setServo(BACK_LEFT_HIP, centerPos - hipSwingAmplitude);
-        break;
-      case 3: // 髋关节反向摆动
-        setServo(FRONT_RIGHT_HIP, centerPos - hipSwingAmplitude);
-        setServo(FRONT_LEFT_HIP, centerPos + hipSwingAmplitude);
-        setServo(BACK_RIGHT_HIP, centerPos - hipSwingAmplitude);
-        setServo(BACK_LEFT_HIP, centerPos + hipSwingAmplitude);
-        break;
-      case 4: // 前腿抬起，后腿下压
-        setServo(FRONT_RIGHT_LEG, centerPos - legLiftHeight);
-        setServo(FRONT_LEFT_LEG, centerPos - legLiftHeight);
-        setServo(BACK_RIGHT_LEG, centerPos);
-        setServo(BACK_LEFT_LEG, centerPos);
-        break;
-      case 5: // 对角线动作 - 前右和后左抬高
-        setServo(FRONT_RIGHT_LEG, centerPos - legLiftHeight);
-        setServo(BACK_LEFT_LEG, centerPos - legLiftHeight);
-        setServo(FRONT_LEFT_LEG, centerPos);
-        setServo(BACK_RIGHT_LEG, centerPos);
-        break;
-      case 6: // 对角线动作 - 前左和后右抬高
-        showFace("love"); // 显示爱心表情
-        setServo(FRONT_LEFT_LEG, centerPos - legLiftHeight);
-        setServo(BACK_RIGHT_LEG, centerPos - legLiftHeight);
-        setServo(FRONT_RIGHT_LEG, centerPos);
-        setServo(BACK_LEFT_LEG, centerPos);
-        break;
-      case 7: // 全身"抖动" - 所有髋关节左转
-        setServo(FRONT_RIGHT_HIP, centerPos - hipSwingAmplitude/2);
-        setServo(FRONT_LEFT_HIP, centerPos - hipSwingAmplitude/2);
-        setServo(BACK_RIGHT_HIP, centerPos - hipSwingAmplitude/2);
-        setServo(BACK_LEFT_HIP, centerPos - hipSwingAmplitude/2);
-        break;
-      case 8: // 全身"抖动" - 所有髋关节右转
-        setServo(FRONT_RIGHT_HIP, centerPos + hipSwingAmplitude/2);
-        setServo(FRONT_LEFT_HIP, centerPos + hipSwingAmplitude/2);
-        setServo(BACK_RIGHT_HIP, centerPos + hipSwingAmplitude/2);
-        setServo(BACK_LEFT_HIP, centerPos + hipSwingAmplitude/2);
-        break;
-      case 9: // 再次全身"抖动" - 所有髋关节左转
-        setServo(FRONT_RIGHT_HIP, centerPos - hipSwingAmplitude/2);
-        setServo(FRONT_LEFT_HIP, centerPos - hipSwingAmplitude/2);
-        setServo(BACK_RIGHT_HIP, centerPos - hipSwingAmplitude/2);
-        setServo(BACK_LEFT_HIP, centerPos - hipSwingAmplitude/2);
-        break;
-      case 10: // 结束动作 - 髋关节回中
-        setServo(FRONT_RIGHT_HIP, centerPos);
-        setServo(FRONT_LEFT_HIP, centerPos);
-        setServo(BACK_RIGHT_HIP, centerPos);
-        setServo(BACK_LEFT_HIP, centerPos);
-        break;
-      case 11: // 结束动作 - 腿部回中
-        setServo(FRONT_RIGHT_LEG, centerPos);
-        setServo(FRONT_LEFT_LEG, centerPos);
-        setServo(BACK_RIGHT_LEG, centerPos);
-        setServo(BACK_LEFT_LEG, centerPos);
-        
-        // 增加计数器，用于确定是否完成舞蹈
-        sharedCounter += 1;
-        
-        // 如果完成了3个完整的舞蹈循环，则标记为完成
-        if (sharedCounter >= 36) { // 3 * 12 = 36
-          currentMotionState = RobotMotionState::Completed;
-          debuglnF("Dancing completed.");
-        }
-        break;
+    switch (dancePhase)
+    {
+    case 0:                // 准备姿势 - 稍微抬起所有腿
+      showFace("excited"); // 显示兴奋表情
+      setServo(FRONT_RIGHT_LEG, centerPos - legLiftHeight / 2);
+      setServo(FRONT_LEFT_LEG, centerPos - legLiftHeight / 2);
+      setServo(BACK_RIGHT_LEG, centerPos - legLiftHeight / 2);
+      setServo(BACK_LEFT_LEG, centerPos - legLiftHeight / 2);
+      break;
+    case 1: // 前腿下压，后腿抬起
+      setServo(FRONT_RIGHT_LEG, centerPos);
+      setServo(FRONT_LEFT_LEG, centerPos);
+      setServo(BACK_RIGHT_LEG, centerPos - legLiftHeight);
+      setServo(BACK_LEFT_LEG, centerPos - legLiftHeight);
+      break;
+    case 2: // 髋关节左右摆动
+      setServo(FRONT_RIGHT_HIP, centerPos + hipSwingAmplitude);
+      setServo(FRONT_LEFT_HIP, centerPos - hipSwingAmplitude);
+      setServo(BACK_RIGHT_HIP, centerPos + hipSwingAmplitude);
+      setServo(BACK_LEFT_HIP, centerPos - hipSwingAmplitude);
+      break;
+    case 3: // 髋关节反向摆动
+      setServo(FRONT_RIGHT_HIP, centerPos - hipSwingAmplitude);
+      setServo(FRONT_LEFT_HIP, centerPos + hipSwingAmplitude);
+      setServo(BACK_RIGHT_HIP, centerPos - hipSwingAmplitude);
+      setServo(BACK_LEFT_HIP, centerPos + hipSwingAmplitude);
+      break;
+    case 4: // 前腿抬起，后腿下压
+      setServo(FRONT_RIGHT_LEG, centerPos - legLiftHeight);
+      setServo(FRONT_LEFT_LEG, centerPos - legLiftHeight);
+      setServo(BACK_RIGHT_LEG, centerPos);
+      setServo(BACK_LEFT_LEG, centerPos);
+      break;
+    case 5: // 对角线动作 - 前右和后左抬高
+      setServo(FRONT_RIGHT_LEG, centerPos - legLiftHeight);
+      setServo(BACK_LEFT_LEG, centerPos - legLiftHeight);
+      setServo(FRONT_LEFT_LEG, centerPos);
+      setServo(BACK_RIGHT_LEG, centerPos);
+      break;
+    case 6:             // 对角线动作 - 前左和后右抬高
+      showFace("love"); // 显示爱心表情
+      setServo(FRONT_LEFT_LEG, centerPos - legLiftHeight);
+      setServo(BACK_RIGHT_LEG, centerPos - legLiftHeight);
+      setServo(FRONT_RIGHT_LEG, centerPos);
+      setServo(BACK_LEFT_LEG, centerPos);
+      break;
+    case 7: // 全身"抖动" - 所有髋关节左转
+      setServo(FRONT_RIGHT_HIP, centerPos - hipSwingAmplitude / 2);
+      setServo(FRONT_LEFT_HIP, centerPos - hipSwingAmplitude / 2);
+      setServo(BACK_RIGHT_HIP, centerPos - hipSwingAmplitude / 2);
+      setServo(BACK_LEFT_HIP, centerPos - hipSwingAmplitude / 2);
+      break;
+    case 8: // 全身"抖动" - 所有髋关节右转
+      setServo(FRONT_RIGHT_HIP, centerPos + hipSwingAmplitude / 2);
+      setServo(FRONT_LEFT_HIP, centerPos + hipSwingAmplitude / 2);
+      setServo(BACK_RIGHT_HIP, centerPos + hipSwingAmplitude / 2);
+      setServo(BACK_LEFT_HIP, centerPos + hipSwingAmplitude / 2);
+      break;
+    case 9: // 再次全身"抖动" - 所有髋关节左转
+      setServo(FRONT_RIGHT_HIP, centerPos - hipSwingAmplitude / 2);
+      setServo(FRONT_LEFT_HIP, centerPos - hipSwingAmplitude / 2);
+      setServo(BACK_RIGHT_HIP, centerPos - hipSwingAmplitude / 2);
+      setServo(BACK_LEFT_HIP, centerPos - hipSwingAmplitude / 2);
+      break;
+    case 10: // 结束动作 - 髋关节回中
+      setServo(FRONT_RIGHT_HIP, centerPos);
+      setServo(FRONT_LEFT_HIP, centerPos);
+      setServo(BACK_RIGHT_HIP, centerPos);
+      setServo(BACK_LEFT_HIP, centerPos);
+      break;
+    case 11: // 结束动作 - 腿部回中
+      setServo(FRONT_RIGHT_LEG, centerPos);
+      setServo(FRONT_LEFT_LEG, centerPos);
+      setServo(BACK_RIGHT_LEG, centerPos);
+      setServo(BACK_LEFT_LEG, centerPos);
+
+      // 增加计数器，用于确定是否完成舞蹈
+      sharedCounter += 1;
+
+      // 如果完成了3个完整的舞蹈循环，则标记为完成
+      if (sharedCounter >= 36)
+      { // 3 * 12 = 36
+        currentMotionState = RobotMotionState::Completed;
+        debuglnF("Dancing completed.");
+      }
+      break;
     }
-    
+
     // 如果不是最后一个阶段，增加计数器
-    if (dancePhase != 11) {
+    if (dancePhase != 11)
+    {
       sharedCounter += 1;
     }
-    
-  } else if (currentMotionState == RobotMotionState::Completed) {
+  }
+  else if (currentMotionState == RobotMotionState::Completed)
+  {
     // 舞蹈完成后回到空闲状态
     debuglnF("Dance completed, returning to idle.");
-    
+
     // 确保所有舵机回到中心位置
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 8; i++)
+    {
       setServo(i, 90);
     }
-    
+
     // 如果没有设置下一个状态，则默认回到空闲状态
-    if (nextMotionId == currentMotionId) {
+    if (nextMotionId == currentMotionId)
+    {
       setMovingState(RobotMotionId::Idle);
     }
   }
 }
 
-void handleMotionDebugUS(){
-  if (currentMotionState == RobotMotionState::NotStarted) {
+void handleMotionDebugUS()
+{
+  if (currentMotionState == RobotMotionState::NotStarted)
+  {
     debuglnF("Robot starts debugging US sensor.");
     currentMotionState = RobotMotionState::InProgress; // 设置为进行中状态
-  } else if (currentMotionState == RobotMotionState::InProgress) {
+  }
+  else if (currentMotionState == RobotMotionState::InProgress)
+  {
     // 获取超声波传感器数据
     int distance = getUSDistance(); // 假设有一个函数获取距离
     debugF("US Distance: ");
     debugln(distance);
 
     // 不阻断新的动作
-    if (haveNextMotion()) {
+    if (haveNextMotion())
+    {
       currentMotionState = RobotMotionState::Completed; // 设置为完成状态
     }
-  } else if (currentMotionState == RobotMotionState::Completed) {
+  }
+  else if (currentMotionState == RobotMotionState::Completed)
+  {
     debuglnF("Debugging US sensor completed.");
   }
 }
@@ -939,7 +1053,7 @@ void handleMotionDebugUS(){
 uint8_t board_pins[8] = {2, 8, 3, 9, 4, 6, 5, 7}; // 舵机引脚定义
 Servo servo;                                      // 创建Servo对象
 Servo servos[8];                                  // 创建多个Servo对象
-uint8_t currentServoPin = -1; // 当前连接的舵机引脚，-1表示未连接
+uint8_t currentServoPin = -1;                     // 当前连接的舵机引脚，-1表示未连接
 
 // 设置舵机角度函数
 // 对于 hip（髋关节）和 leg（腿部），
@@ -948,9 +1062,11 @@ uint8_t currentServoPin = -1; // 当前连接的舵机引脚，-1表示未连接
 
 // 现在不再共享一个servo对象，而是每个都有自己的Servo对象
 bool ifServoInit = false; // 是否已初始化舵机
-void initServos() {
+void initServos()
+{
   debuglnF("Initializing servos...");
-  for (int i = 0; i < 8; i++) {
+  for (int i = 0; i < 8; i++)
+  {
     servos[i].attach(board_pins[i]); // 连接每个舵机到对应引脚
     servos[i].write(90);             // 初始化所有舵机到中心位置
     debugF("Servo ");
@@ -960,26 +1076,31 @@ void initServos() {
   }
 }
 
-void setServo(int id, int target) {
-  if (!ifServoInit) {
-    initServos(); // 如果舵机未初始化，先初始化
+void setServo(int id, int target)
+{
+  if (!ifServoInit)
+  {
+    initServos();       // 如果舵机未初始化，先初始化
     ifServoInit = true; // 设置标志位，避免重复初始化
   }
-  
+
   // 检查舵机ID是否在有效范围内
-  if (id < 0 || id > 7) {
+  if (id < 0 || id > 7)
+  {
     debugF("Invalid servo ID: ");
     debugln(id);
     return;
   }
 
   // 首先限制目标角度在0-180度范围内，防止异常值传入
-  if (target < 0) {
+  if (target < 0)
+  {
     debugF("Warning: Servo angle less than 0, corrected to: ");
     debugln(target);
     target = 0;
   }
-  if (target > 180) {
+  if (target > 180)
+  {
     debugF("Warning: Servo angle greater than 180, corrected to: ");
     debugln(target);
     target = 180;
@@ -995,10 +1116,13 @@ void setServo(int id, int target) {
 
   int angle;
   // 因为现在每个舵机都有自己的Servo对象，所以不需要切换引脚
-  if (reverseLoader.get(id)) {
+  if (reverseLoader.get(id))
+  {
     debugF(", reverse: true");
     angle = 180 - (target + trimLoader.get(id));
-  } else {
+  }
+  else
+  {
     angle = target + trimLoader.get(id);
   }
 
@@ -1018,17 +1142,20 @@ void setServo(int id, int target) {
   delay(20); // 添加短暂延时以避免同时移动所有舵机
 }
 
-void _setServo(int id, int target) {
+void _setServo(int id, int target)
+{
   if (id < 0 || id > 7)
     return;
 
   // 首先限制目标角度在0-180度范围内，防止异常值传入
-  if (target < 0) {
+  if (target < 0)
+  {
     debugF("警告：舵机角度小于0，已修正：");
     debugln(target);
     target = 0;
   }
-  if (target > 180) {
+  if (target > 180)
+  {
     debugF("警告：舵机角度大于180，已修正：");
     debugln(target);
     target = 180;
@@ -1040,9 +1167,11 @@ void _setServo(int id, int target) {
   debug(target);
 
   // 如果需要更改舵机引脚
-  if (currentServoPin != board_pins[id]) {
+  if (currentServoPin != board_pins[id])
+  {
     // 如果之前有舵机连接，先分离
-    if (currentServoPin >= 0) {
+    if (currentServoPin >= 0)
+    {
       servo.detach();
     }
     // 连接新舵机
@@ -1052,10 +1181,13 @@ void _setServo(int id, int target) {
 
   // 计算实际角度，考虑修剪和反转
   int angle;
-  if (reverseLoader.get(id)) {
+  if (reverseLoader.get(id))
+  {
     debugF(", reverse: true");
     angle = 180 - (target + trimLoader.get(id));
-  } else {
+  }
+  else
+  {
     angle = target + trimLoader.get(id);
   }
 
@@ -1064,7 +1196,6 @@ void _setServo(int id, int target) {
     angle = 0;
   if (angle > 180)
     angle = 180;
-
 
   debugF(", angle: ");
   debug(angle);
