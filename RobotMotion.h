@@ -16,19 +16,24 @@ void SyncMovingState();
 // 更新动作
 void UpdateMotion();
 
-// 各种动作处理函数
-void handleMotionIdle();
-void handleMotionWalk();
-void handleMotionAutoWalk();
-void handleMotionTurnLeft();
-void handleMotionTurnRight();
-void handleMotionDancing();
-void handleMotionDebugUS();
+// 各个动作已经封装到MotionHandler子类中
 
 // 全局运动状态变量声明
 extern RobotMotionId currentMotionId;
 extern RobotMotionId nextMotionId;
 extern RobotMotionState currentMotionState;
 extern uint16_t sharedCounter;
+
+class MotionHandler {
+public:
+    RobotMotionId motionId; // 运动ID
+    // 处理运动状态的虚函数
+    virtual void handleMotion();
+    virtual void handleNotStarted();
+    virtual void handleInProgress();
+    virtual void handleCompleted();
+};
+
+extern MotionHandler *motionHandlers[];
 
 #endif // ROBOT_MOTION_H
